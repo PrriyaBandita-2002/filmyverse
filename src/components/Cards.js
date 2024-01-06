@@ -1,77 +1,57 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactStars from "react-stars";
+import { ThreeDots } from "react-loader-spinner";
+import { Link } from "react-router-dom";
+import { getDocs } from "firebase/firestore";
+import { movieref } from "../firebase/firebase";
 const Cards = () => {
-  const [data, setData] = useState([
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-    {
-      name: " Black Panther",
-      rating: " 5",
-      year: " 2013",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHewK7CkVROUSV6nDdO5Jg5qvyj4hsmTHcbp3QUw73faWUEnZxzeB8Xzy2LbRjavu-Hs&usqp=CAU",
-    },
-  ]);
+  const [data, setData] = useState([]);
+  const [loading, setloading] = useState(true);
+  useEffect(() => {
+    async function getData() {
+      setloading(true);
+      const _data = await getDocs(movieref);
+      _data.forEach((doc) => {
+        setData((prv) => [...prv, { ...doc.data(), id: doc.id }]);
+      });
+      setloading(false);
+    }
+    getData();
+  }, []);
 
   return (
-    <div className="flex flex-wrap justify-between p-3 mt-2">
-      {data.map((e, i) => {
-        return (
-          <div className="card p-2 shadow-lg font-medium hover:-translate-y-3 cursor-pointer mt-6 transition-all duration-500">
-            <img className="h-72" src={e.img} alt="images" />
-            <h1>
-              <span classname="text-gray-500">Name:</span> {e.name}
-            </h1>
-            <h1 className="flex items-center">
-              <span classname="text-gray-500 mr-1">Rating:</span>
-              <ReactStars size={20} half={true} value={e.rating} edit={false} />
-            </h1>
-            <h1>
-              <span classname="text-gray-500">Year:</span>
-              {e.year}
-            </h1>
-          </div>
-        );
-      })}
+    <div className="flex flex-wrap justify-between px-3 mt-2">
+      {loading ? (
+        <div className="w-full flex justify-center items-center h-96">
+          <ThreeDots height={40} color="white" />
+        </div>
+      ) : (
+        data.map((e, i) => {
+          return (
+            <Link to={`/detail/${e.id}`}>
+              <div
+                key={i}
+                className="card font-medium shadow-lg p-2 hover:-translate-y-3 cursor-pointer mt-6 transition-all duration-500"
+              >
+                <img alt="image" className="h-60 md:h-72" src={e.image} />
+                <h1>{e.title}</h1>
+                <h1 className="flex items-center">
+                  <span className="text-gray-500 mr-1">Rating:</span>
+                  <ReactStars
+                    size={20}
+                    half={true}
+                    value={e.rating / e.rated}
+                    edit={false}
+                  />
+                </h1>
+                <h1>
+                  <span className="text-gray-500">Year:</span> {e.year}
+                </h1>
+              </div>
+            </Link>
+          );
+        })
+      )}
     </div>
   );
 };
